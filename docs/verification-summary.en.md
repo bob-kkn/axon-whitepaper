@@ -1,6 +1,6 @@
 # Axon Design Validation Summary
 
-> A record of validating the whitepaper's core claims through eight independent prototypes — five validation slices and three integration slices. For investor and partner review.
+> A record of validating the whitepaper's core claims through nine independent prototypes — five validation slices, one group-channel extension of C, and three integration slices. For investor and partner review.
 > All results are pre-testnet prototype output; confirmation is left to testnet measurement.
 
 ## In brief
@@ -17,6 +17,14 @@ The Axon whitepaper makes three large claims — that the **issuance economics**
 | **C. Payment channel (`channel/`)** | Is the honest party protected under exit fraud and offline exit in an L2 channel | Real ed25519 signatures + commit-close-dispute state machine | Latest-signed-state-wins dispute preserves the honest party's share under both attacks. **Four invariants hold over 500 arbitrary histories with 0 violations — each history injects adversarial submissions (bad signature, unbalanced state, stale nonce), so the invariants actually fire when a validation gate is broken** | Genesis, group channels, and real networking are out of scope |
 | **B1. PoI plumbing (`poi/`)** | Does the commit-sample-slash plumbing of issuance verification withstand protocol attack | Real sha256 Merkle + public-randomness sampling + slashing | All four attacks (tamper, non-disclosure, inclusion forgery, grinding) resolve to slashing. **Five invariants over 500 epochs, 0 violations — the sweep now adversarially exercises proof verification and the sample's dependence on randomness (an invalid proof injected on a non-forged leaf)**. The measured detection rate reproduces A's oracle `1−(1−f)^k` within 3σ | The actual ledger derivation of the public randomness and the re-execution adjudication are separate layers (replaced by abstractions) |
 
+## Extending C — the group-channel slice
+
+C validated the two-party channel. The **group channel** the whitepaper cites in 6.3 as a capital mitigation (N agents sharing a deposit) carries a risk the bilateral case does not — can N−1 collude to cut the honest party's share? G places the safe rule (unanimity) and the pragmatic relaxation (threshold signatures) side by side in the same code to demonstrate the cost of relaxing.
+
+| Slice | Question verified | Method | Key result | Honest limit |
+|-------|-------------------|--------|------------|--------------|
+| **G. Group channel (`group/`)** | In an N-party shared-deposit channel, is the honest party protected against N−1 collusion | Real ed25519 (reuses axon-channel) + dual verifier (unanimity vs threshold) | Under unanimity both the colluding state and a rollback are rejected, preserving the honest party's share. **Relaxing to a threshold (k-of-N) lets the same collusion pass and the honest party loses its entire deposit — the cost of relaxation is demonstrated**. Five invariants over 500 arbitrary group histories, 0 violations (each history injects colluding, replayed, negative, and phantom-party states; neutering the gate fires them 300/300) | Unanimity stalls the channel if even one party goes offline — obtaining liveness safely (per-party nonces, virtual channels) is roadmap. The capital benefit is fungibility, not capital per throughput |
+
 ## Stripping out the abstractions — the three integration slices
 
 The five validation slices left abstractions in three places: the L1 ledger was an in-memory dictionary (`MockL1`), the sampling randomness was a premise ("unpredictable after commit"), and the re-execution adjudication was a true/false oracle. Three integration slices replaced each with a real structure.
@@ -29,7 +37,7 @@ The five validation slices left abstractions in three places: the L1 ledger was 
 
 ## How it all connects — the chain of validation
 
-The eight slices run independently, but they pass assumptions and measurements back and forth to form a single chain.
+The eight validation and integration slices run independently, but they pass assumptions and measurements back and forth to form a single chain (C's group extension G stands outside this chain as an extension slice).
 
 - **A assumed two things** — that the detection probability of sampling is `1−(1−f)^k` (the sampling oracle), and that re-execution adjudication is perfect.
 - **B1 realized the first assumption.** When we built the plumbing with real Merkle commitments and post-commit public-randomness sampling, the measured detection rate over many epochs reproduced exactly the closed form A had premised. **A's economic conclusion stands not on an abstraction but on the real plumbing.**
@@ -48,11 +56,11 @@ In short, B2 measures reality and feeds A, B1 realizes A's sampling mechanism an
 
 3. **Every time we made an abstraction real, the assumption presented a bill — and both bills were payable.** When we built the sampling randomness the whitepaper had premised as "unbiasable" as a real commit-reveal beacon, the participant who reveals last could choose among a bounded set of outcomes by deciding whether to withhold its own commitment — detection drops from `d` to `d^(2^g)`. In exchange, a withheld commitment is itself detectable and slashable, so that choice carries a price, and the accumulation of the repeated game recovers the loss. There was also a bill in the opposite direction: the fact that the real protocol re-adjudicates **each** sampled job **raises** detection above the coarse approximation the economic simulation used. **Making an assumption real moves some numbers the wrong way and some the right way — we wrote down both.**
 
-4. **We adversarially audited whether the invariants actually verify anything.** The security properties of the eight slices are verified not through a few scenarios but as **invariants** over hundreds to thousands of arbitrary histories, epochs, and transaction DAGs. But "0 violations" is weak evidence on its own — an invariant that catches nothing also reports 0. So we audited each slice's invariant sweep by **deliberately breaking the code** (neutering the validation gate or deleting an individual check) and re-running the same seeds, counting how many seeds each invariant actually fails on. At first several sweeps passed even with the gate removed entirely — because the generator produced only honest inputs and never exercised the validation path. We fixed this at the root by injecting adversarial submissions into each random history (bad signatures, unbalanced states, double-spends, stale-state replays, leaf-count forgery, sample tampering). Now breaking a gate makes invariants fail on tens to hundreds of seeds (channel validator neutered: 135/200; ledger dropping a valid tx: `dag_soundness` 109/200; sampler ignoring randomness: 300/300). We also fixed the real defects an adversarial review caught before merge — a cooperative close replaying a stale state (domain separation), a Merkle tree not binding the leaf count (binding n into the root), a settlement path accepting a negative share (outright rejection), and tautological invariants in PoI proof verification and ledger DAG soundness (replaced with independent recomputation). **That verification passed means it could have failed and did not — and we proved it could have, in seed counts.**
+4. **We adversarially audited whether the invariants actually verify anything.** The security properties of the nine slices are verified not through a few scenarios but as **invariants** over hundreds to thousands of arbitrary histories, epochs, and transaction DAGs. But "0 violations" is weak evidence on its own — an invariant that catches nothing also reports 0. So we audited each slice's invariant sweep by **deliberately breaking the code** (neutering the validation gate or deleting an individual check) and re-running the same seeds, counting how many seeds each invariant actually fails on. At first several sweeps passed even with the gate removed entirely — because the generator produced only honest inputs and never exercised the validation path. We fixed this at the root by injecting adversarial submissions into each random history (bad signatures, unbalanced states, double-spends, stale-state replays, leaf-count forgery, sample tampering). Now breaking a gate makes invariants fail on tens to hundreds of seeds (channel validator neutered: 135/200; ledger dropping a valid tx: `dag_soundness` 109/200; sampler ignoring randomness: 300/300). We also fixed the real defects an adversarial review caught before merge — a cooperative close replaying a stale state (domain separation), a Merkle tree not binding the leaf count (binding n into the root), a settlement path accepting a negative share (outright rejection), and tautological invariants in PoI proof verification and ledger DAG soundness (replaced with independent recomputation). **That verification passed means it could have failed and did not — and we proved it could have, in seed counts.**
 
 ## Honest limits
 
-These eight slices are all **pre-testnet prototypes** and do not substitute for measurement. Specifically:
+These nine slices are all **pre-testnet prototypes** and do not substitute for measurement. Specifically:
 
 - **The slices are not yet one running system.** D1's DAG ledger, D2's beacon, and D3's wiring are each independent prototypes. D1 does not actually receive and process C's channel settlements, nor does D2's beacon actually drive B1's sampling. We showed that each abstraction holds **individually** as a real structure; an end-to-end system combining them all in one process is the province of the testnet.
 - **Remaining abstractions**: adjudication is still a stub reflecting the measured FAR (real LLM re-execution is measured separately by B2), a VDF to remove the beacon's residual bias and P2P networking are roadmap, and A's economic model presumes four conservative simplifications.
@@ -70,11 +78,12 @@ Every slice has its code, tests, and results published in the repository, and re
 | Feedback | `sim/` FAR sweep | `results/far_feedback/` |
 | C. Payment channel | `channel/` (36 tests) | `results/channel/` |
 | B1. PoI plumbing | `poi/` (53 tests) | `results/poi/` |
+| G. Group channel | `group/` (37 tests, depends on channel for real) | `results/group/` |
 | D1. DAG L1 ledger | `ledger/` (42 tests) | `results/ledger/` |
 | D2. Randomness beacon | `beacon/` (24 tests) | `results/beacon/` |
 | D3. PoI×adjudication wiring | `d3/` (21 tests, depends on poi for real) | `results/d3/` |
 
-A total of **274 fast tests** plus real-model @slow experiments. Each slice includes its own README and findings report, and the design and implementation plans are in `docs/superpowers/{specs,plans}/`.
+A total of **311 fast tests** plus real-model @slow experiments. Each slice includes its own README and findings report, and the design and implementation plans are in `docs/superpowers/{specs,plans}/`.
 
 ---
 
