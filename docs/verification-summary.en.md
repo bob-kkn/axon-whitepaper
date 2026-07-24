@@ -31,7 +31,7 @@ The five validation slices left abstractions in three places: the L1 ledger was 
 
 | Slice | Abstraction removed | Method | Key result | Honest limit |
 |-------|---------------------|--------|------------|--------------|
-| **D1. DAG L1 ledger (`ledger/`)** | `MockL1` → a real block-less DAG | Account-based + DAG (parent references), five Axon tx types (deposit, settle, issue, slash, transfer) | In a double-spend conflict **exactly one confirms, deterministically** (single-state fold). Only issuance grows the supply, split exactly into supplier share + verification tax. **Six invariants hold over 500 random transaction DAGs with 0 violations — the sweep now exercises real settle confirmation, authorization reuse, and admission-completeness** (the generator produces real double-spend conflicts and the ledger confirms exactly one) | P2P networking, probabilistic finality, and transaction signature authentication are out of scope |
+| **D1. DAG L1 ledger (`ledger/`)** | `MockL1` → a real block-less DAG | Account-based + DAG (parent references), five Axon tx types (deposit, settle, issue, slash, transfer) | In a double-spend conflict **exactly one confirms, deterministically** (single-state fold). Only issuance grows the supply, split exactly into supplier share + verification tax. **Six invariants hold over 500 random transaction DAGs with 0 violations** (the generator produces real double-spend conflicts and the ledger confirms exactly one). Filling a gap the end-to-end slice exposed, 891 slashes and 492 settlements now actually confirm, so the forfeiture and authorization-consumption paths are exercised too — before that, not a single slash had ever confirmed across 200 seeds | P2P networking, probabilistic finality, and transaction signature authentication are out of scope |
 | **D2. Randomness beacon (`beacon/`)** | Abstract seed → a real commit-reveal beacon | sha256 commit-reveal + exact grinding enumeration | Achieves unpredictability and public verifiability. But **a last revealer can select among 2^k outputs** → detection degrades from `d` to `d^(2^g)` (0.958→0.841 at g=2). Withhold penalties bound g and accumulation recovers it | A VDF to remove the residual bias is roadmap (we did not build a toy VDF) |
 | **D3. PoI×adjudication wiring (`d3/`)** | Abstract `is_forged` → adjudication wired into the real poi protocol | Import poi for real and inject a B2-measured-FAR adjudicator into verdict's adjudicator slot | The integrated detection `1−(1−f(1−FAR))^k` emerges from the real pipeline (at FAR=0 it reduces to B1). **Four composition invariants over 300 epochs, 0 violations** | Adjudication is a deterministic stub reflecting B2's measured FAR (real LLM re-execution is B2's province) |
 | **E2E. End-to-end issuance spine (`e2e/`)** | The last abstraction — that the slices never actually call each other | Import all four for real and wire them in one process (beacon → sampling → adjudication → ledger issuance), with the three seams as explicit adapters carrying contract tests | A verified epoch mints exactly once at the anchor (supplier share + 3% tax); a forged epoch forfeits its bond and mints nothing. The sample is derived from the real beacon output (bound to all 256 bits — verified by exhaustive byte and bit flips). **Six invariants over 300 runs, 0 violations** | **The ledger cannot enforce the issuance anchor** — the authorization does not bind an amount, so the anchor is only node-local policy, and a node that skips it can confirm an inflated issuance (whitepaper 11.1 risk). Wiring the payment path is the next slice |
@@ -73,7 +73,7 @@ These ten slices are all **pre-testnet prototypes** and do not substitute for me
 
 ## Reproducibility
 
-Every slice has its code, tests, and results published in the repository, and reproduces deterministically (fixed seeds).
+Every slice has its code, tests, and results published in the repository, and reproduces deterministically (fixed seeds). That claim was itself audited — D1's random-DAG generator chose tips by iterating a `set`, so results depended on the Python hash seed (885 / 891 / 892 across processes); sorting fixed it, and we confirmed identical values at three different hash seeds.
 
 | Slice | Code | Results |
 |-------|------|---------|
@@ -83,12 +83,12 @@ Every slice has its code, tests, and results published in the repository, and re
 | C. Payment channel | `channel/` (36 tests) | `results/channel/` |
 | B1. PoI plumbing | `poi/` (53 tests) | `results/poi/` |
 | G. Group channel | `group/` (37 tests, depends on channel for real) | `results/group/` |
-| D1. DAG L1 ledger | `ledger/` (42 tests) | `results/ledger/` |
+| D1. DAG L1 ledger | `ledger/` (44 tests) | `results/ledger/` |
 | D2. Randomness beacon | `beacon/` (24 tests) | `results/beacon/` |
 | D3. PoI×adjudication wiring | `d3/` (21 tests, depends on poi for real) | `results/d3/` |
 | E2E. End-to-end issuance spine | `e2e/` (29 tests, depends on poi, beacon, d3, ledger for real) | `results/e2e/` |
 
-A total of **340 fast tests** plus real-model @slow experiments. Each slice includes its own README and findings report, and the design and implementation plans are in `docs/superpowers/{specs,plans}/`.
+A total of **342 fast tests** plus real-model @slow experiments. Each slice includes its own README and findings report, and the design and implementation plans are in `docs/superpowers/{specs,plans}/`.
 
 ---
 
