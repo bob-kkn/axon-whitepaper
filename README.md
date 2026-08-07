@@ -11,7 +11,7 @@ Axon is built on a single thesis: in an economy where most transactions run agen
 | 🇰🇷 [백서 (한국어)](docs/whitepaper/whitepaper.ko.md) | Korean master |
 | 🇬🇧 [Whitepaper (English)](docs/whitepaper/whitepaper.en.md) | English mirror |
 | 📊 [Research notes](docs/whitepaper/research-notes.md) | Market-data sources |
-| ✅ [검증 요약 (한국어)](docs/verification-summary.ko.md) · [Validation summary (English)](docs/verification-summary.en.md) | Ten prototype slices stress-testing the core claims, 632 tests (pre-testnet) |
+| ✅ [검증 요약 (한국어)](docs/verification-summary.ko.md) · [Validation summary (English)](docs/verification-summary.en.md) | Ten prototype slices stress-testing the core claims, 700 tests (pre-testnet) |
 
 ## Status
 
