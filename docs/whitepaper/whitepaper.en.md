@@ -21,7 +21,6 @@
 12. [Conclusion](#12-conclusion)
 - [Appendix A. Economic Parameter Table](#appendix-a-economic-parameter-table)
 - [Appendix B. Glossary](#appendix-b-glossary)
-- [Team](#team)
 
 ## 0. Executive Summary
 
@@ -33,7 +32,7 @@
 
 **The market.** The AI inference market — the real good that gets paid for — is projected to grow from USD 106.15 billion in 2025 to USD 254.98 billion in 2030, a 19.2% CAGR[^1], and by its nature inference spending is entirely recurring (9.1). To the extent that this payment shifts into the A2A ultra-small, high-frequency segment that existing rails cannot handle, it becomes Axon's potential payment volume, while the protocol fee (0.1–0.5% of transaction value), the operator's holdings of the initial token allocation, and enterprise services form the revenue sources of the operating entity (9.2–9.4).
 
-**Current stage and the ask.** Axon is now at Phase 0, the stage of whitepaper publication and design review. The roadmap is defined not by calendar dates but by transition conditions, and the draft issuance and verification parameters will be re-validated through the simulations and empirical measurements of the Phase 1 testnet (Chapter 10). This whitepaper discloses even the assumptions and unresolved items of the design as they stand (Appendix A), and invites investors and partners to take part in three ways: feedback on the design review, participation as supply and verification nodes on the Phase 1 testnet, and early workload partnerships.
+**Current stage and the ask.** Axon is now at Phase 0, the stage of whitepaper publication and design review. The roadmap is defined not by calendar dates but by transition conditions, and the draft issuance and verification parameters will be re-validated through the simulations and empirical measurements of the Phase 1 testnet (Chapter 10). This whitepaper discloses even the assumptions and unresolved items of the design as they stand (Appendix A), and invites investors and partners to take part in three ways: feedback on the design review, participation as supply and verification nodes on the Phase 1 testnet, and early workload partnerships. Team composition and corporate details are **not carried in this edition** — the ask at Phase 0 is design review, and the party receiving the operator/team allocation of 10.1 will be disclosed when that allocation is actually fixed.
 
 ## 1. Background — The Rise of the Agent Economy
 
@@ -754,6 +753,3 @@ We gather the economic parameters scattered through the body into one table. The
 - **owner-liability model**: The account model that assigns autonomy to the agent and legal liability to the owner (human/legal entity) linked to the DID (6.4, 11.3). KYC is performed at the owner level.
 - **ecosystem reward pool**: 55% of the genesis allocation (10.1). As the funding source of the bootstrap supplementary reward, it is released in sequence according to a pre-announced decay emission schedule.
 - **genesis**: The initial supply issued once at the network's launch (10.1). Its absolute quantity is announced by governance before mainnet launch, and every new issuance thereafter follows only the issuance anchor.
-
-## Team
-<!-- PLACEHOLDER: team information to be provided separately — intentional placeholder -->
