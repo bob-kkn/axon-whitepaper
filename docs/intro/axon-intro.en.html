@@ -1,0 +1,976 @@
+<title>Axon Compute Standard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Serif:wght@400;600;700&display=swap">
+
+<style>
+  /* ── Tokens: the light palette is the base ───────────── */
+  :root {
+    --paper:        #eceef0;
+    --paper-2:      #f7f8f9;
+    --ink:          #11181e;
+    --ink-2:        #46555f;
+    --ink-3:        #78868f;
+    --rule:         #ccd2d6;
+    --rule-2:       #9aa5ac;
+    --accent:       #0e6b5b;
+    --signal:       #a8442a;
+
+    --f-display: "IBM Plex Serif", Georgia, serif;
+    --f-body:    "IBM Plex Sans", system-ui, sans-serif;
+    --f-mono:    "IBM Plex Mono", ui-monospace, "Cascadia Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:    #0e1418;
+      --paper-2:  #161e23;
+      --ink:      #e6ecef;
+      --ink-2:    #a3b1b9;
+      --ink-3:    #6f8088;
+      --rule:     #25313a;
+      --rule-2:   #3d4c57;
+      --accent:   #4fbfa5;
+      --signal:   #e0906f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:    #0e1418;
+    --paper-2:  #161e23;
+    --ink:      #e6ecef;
+    --ink-2:    #a3b1b9;
+    --ink-3:    #6f8088;
+    --rule:     #25313a;
+    --rule-2:   #3d4c57;
+    --accent:   #4fbfa5;
+    --signal:   #e0906f;
+  }
+
+  /* ── Base ────────────────────────────────────────────── */
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 1.72;
+    -webkit-font-smoothing: antialiased;
+  }
+  * { box-sizing: border-box; }
+
+  .page {
+    max-width: 1120px;
+    margin-inline: auto;
+    padding-inline: 20px;
+    padding-block: 0 5rem;
+  }
+
+  a { color: var(--accent); text-underline-offset: 3px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 400; }
+  p { margin: 0; max-width: 66ch; }
+
+  .mono {
+    font-family: var(--f-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ── Instrument bar ──────────────────────────────────── */
+  .meterbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.25rem;
+    padding-block: 1.1rem 0.9rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .wordmark {
+    font-family: var(--f-mono);
+    font-weight: 600;
+    font-size: 0.82rem;
+    letter-spacing: 0.22em;
+    color: var(--ink);
+  }
+  .phase {
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0.1rem 0.5rem;
+    white-space: nowrap;
+  }
+  .meterbar .spacer { flex: 1 1 auto; }
+
+  /* ── Masthead ────────────────────────────────────────── */
+  .masthead { padding-block: 3.5rem 3rem; }
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  h1 {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: clamp(2.2rem, 6.4vw, 3.9rem);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    margin-block: 1.1rem 0;
+  }
+  h1 em { font-style: normal; color: var(--accent); }
+  .lede {
+    margin-top: 1.6rem;
+    font-size: clamp(1.02rem, 2.4vw, 1.2rem);
+    line-height: 1.7;
+    color: var(--ink-2);
+    max-width: 46ch;
+  }
+
+  /* ── Specification plate ─────────────────────────────── */
+  .plate {
+    margin-top: 2.75rem;
+    border: 1px solid var(--rule-2);
+    background: var(--paper-2);
+    max-width: 40rem;
+  }
+  .plate-inner { border: 1px solid var(--rule); margin: 5px; padding: 1.35rem 1.4rem 1.5rem; }
+  .plate-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .plate-eq {
+    font-family: var(--f-display);
+    font-size: clamp(1.2rem, 3.6vw, 1.6rem);
+    line-height: 1.45;
+    padding-top: 0.95rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .plate-eq b { font-weight: 700; color: var(--accent); }
+  .plate-note { margin-top: 0.7rem; font-size: 0.85rem; color: var(--ink-2); line-height: 1.7; }
+
+  /* ── Chapters ────────────────────────────────────────── */
+  .chap { padding-block: 3.25rem; border-top: 1px solid var(--rule); }
+  .chap-mark { padding-bottom: 1.1rem; }
+  .chap-mark .code {
+    font-family: var(--f-mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    display: block;
+  }
+  .chap-mark .ref {
+    font-family: var(--f-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+    display: block;
+    margin-top: 0.45rem;
+  }
+  h2 {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: clamp(1.45rem, 3.8vw, 1.95rem);
+    line-height: 1.26;
+    letter-spacing: -0.015em;
+    margin-bottom: 1.3rem;
+  }
+  .body > * + * { margin-top: 1.15rem; }
+  .body h3 {
+    font-family: var(--f-body);
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--ink);
+    margin-top: 2.2rem;
+  }
+  .body h3 + * { margin-top: 0.7rem; }
+
+  @media (min-width: 920px) {
+    .chap { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); column-gap: 3rem; }
+    .chap-mark { padding-bottom: 0; text-align: right; position: relative; }
+    .chap-mark::after {
+      content: "";
+      position: absolute;
+      top: 0.55rem; right: -1.5rem; bottom: 0.4rem;
+      width: 1px;
+      background: repeating-linear-gradient(to bottom, var(--rule) 0 1px, transparent 1px 11px);
+    }
+  }
+
+  /* ── Glosses ─────────────────────────────────────────── */
+  .gloss {
+    display: block;
+    border-left: 2px solid var(--accent);
+    padding: 0.15rem 0 0.15rem 0.95rem;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: var(--ink-2);
+    max-width: 58ch;
+  }
+  .gloss b { font-weight: 600; color: var(--ink); }
+
+  /* ── Definition rows ─────────────────────────────────── */
+  .rows { display: grid; gap: 0; max-width: 46rem; }
+  .row {
+    display: grid;
+    grid-template-columns: 10.5rem minmax(0, 1fr);
+    gap: 0.3rem 1.5rem;
+    padding-block: 0.95rem;
+    border-bottom: 1px solid var(--rule);
+    align-items: baseline;
+  }
+  .row:first-child { border-top: 1px solid var(--rule); }
+  .row dt { font-weight: 500; font-size: 0.9rem; color: var(--ink); }
+  .row dd { margin: 0; font-size: 0.95rem; line-height: 1.7; }
+  @media (max-width: 560px) { .row { grid-template-columns: 1fr; } }
+
+  /* ── Layer stack ─────────────────────────────────────── */
+  .stack { margin-top: 1.5rem; max-width: 46rem; display: grid; gap: 4px; }
+  .layer {
+    display: grid;
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    gap: 0.35rem 1.2rem;
+    padding: 1rem 1.15rem;
+    background: var(--paper-2);
+    border-left: 3px solid var(--rule-2);
+  }
+  .layer.l2 { border-left-color: var(--accent); }
+  .layer .tag {
+    font-family: var(--f-mono);
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+  }
+  .layer .what { font-size: 0.93rem; line-height: 1.65; color: var(--ink-2); }
+  .layer .what b { font-weight: 600; color: var(--ink); }
+  @media (max-width: 560px) { .layer { grid-template-columns: 1fr; } }
+
+  /* ── Flow ────────────────────────────────────────────── */
+  .flow {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 0.55rem;
+    max-width: 46rem;
+  }
+  .step {
+    flex: 1 1 9rem;
+    border: 1px solid var(--rule);
+    background: var(--paper-2);
+    padding: 0.9rem 0.95rem 1rem;
+  }
+  .step .n {
+    font-family: var(--f-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 0.45rem;
+  }
+  .step .t { font-size: 0.89rem; line-height: 1.6; color: var(--ink-2); }
+  .step .t b { font-weight: 600; color: var(--ink); }
+
+  /* ── Tables ──────────────────────────────────────────── */
+  .tablewrap { margin-top: 1.5rem; overflow-x: auto; max-width: 46rem; }
+  table { border-collapse: collapse; width: 100%; min-width: 30rem; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 0.7rem 1rem 0.7rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; line-height: 1.6; }
+  th {
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    border-bottom-color: var(--rule-2);
+    white-space: nowrap;
+  }
+  td:first-child { font-weight: 500; padding-right: 1.5rem; }
+  td.v { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 0.84rem; white-space: nowrap; }
+  caption { text-align: left; padding-bottom: 0.8rem; }
+
+  /* ── Objection ───────────────────────────────────────── */
+  .objection {
+    margin-top: 1.6rem;
+    max-width: 46rem;
+    background: var(--paper-2);
+    border-top: 2px solid var(--ink);
+    padding: 1.3rem 1.4rem 1.4rem;
+  }
+  .objection .q {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 1.08rem;
+    line-height: 1.5;
+    margin: 0;
+  }
+  .objection .a { margin-top: 0.85rem; font-size: 0.94rem; line-height: 1.75; color: var(--ink-2); }
+  .objection .a b { font-weight: 600; color: var(--ink); }
+
+  /* ── Open questions ──────────────────────────────────── */
+  .limits { margin-top: 1.5rem; max-width: 46rem; display: grid; gap: 0; }
+  .limit {
+    display: grid;
+    grid-template-columns: 1.4rem minmax(0, 1fr);
+    gap: 0.9rem;
+    padding-block: 1rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .limit:first-child { border-top: 1px solid var(--rule); }
+  .limit .k { font-family: var(--f-mono); font-size: 0.8rem; color: var(--signal); line-height: 1.8; }
+  .limit .d { font-size: 0.94rem; line-height: 1.7; color: var(--ink-2); }
+  .limit .d b { font-weight: 600; color: var(--ink); }
+
+  /* ── Measured figures ────────────────────────────────── */
+  .figures {
+    margin-top: 1.6rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    max-width: 46rem;
+  }
+  .fig { background: var(--paper-2); padding: 1.1rem 1.1rem 1.2rem; }
+  .fig .v {
+    font-family: var(--f-mono);
+    font-weight: 600;
+    font-size: 1.5rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    display: block;
+    line-height: 1.2;
+  }
+  .fig .k { margin-top: 0.45rem; font-size: 0.8rem; line-height: 1.55; color: var(--ink-2); }
+
+  /* ── Phases ──────────────────────────────────────────── */
+  .phases { margin-top: 1.5rem; max-width: 46rem; }
+  .ph {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    gap: 0.35rem 1.5rem;
+    padding-block: 1.05rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .ph:first-child { border-top: 1px solid var(--rule); }
+  .ph .p {
+    font-family: var(--f-mono);
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--ink-3);
+  }
+  .ph.now .p { color: var(--accent); }
+  .ph .d { font-size: 0.93rem; line-height: 1.7; color: var(--ink-2); }
+  .ph .d b { font-weight: 600; color: var(--ink); }
+  .ph .exit { display: block; margin-top: 0.3rem; font-size: 0.83rem; color: var(--ink-3); }
+  @media (max-width: 560px) { .ph { grid-template-columns: 1fr; } }
+
+  /* ── Closing ─────────────────────────────────────────── */
+  .closing { padding-block: 3.5rem 0; border-top: 2px solid var(--ink); }
+  .closing .big {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: clamp(1.4rem, 4.2vw, 2rem);
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+    max-width: 22ch;
+  }
+  .docs { margin-top: 2.5rem; display: grid; gap: 0; max-width: 42rem; }
+  .doc {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.3rem 1rem;
+    align-items: baseline;
+    padding-block: 0.95rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .doc:first-child { border-top: 1px solid var(--rule); }
+  .doc .n { font-size: 0.95rem; font-weight: 500; }
+  .doc .n span { display: block; font-weight: 300; font-size: 0.85rem; color: var(--ink-2); margin-top: 0.15rem; line-height: 1.6; }
+  .colophon {
+    margin-top: 3rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--rule);
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    line-height: 1.9;
+    letter-spacing: 0.03em;
+    color: var(--ink-3);
+  }
+</style>
+
+<div class="page">
+
+  <div class="meterbar">
+    <span class="wordmark">AXON &middot; AXN</span>
+    <span class="spacer"></span>
+    <span class="phase">PHASE 0 &mdash; DESIGN REVIEW</span>
+    <span class="mono">A plain-language summary</span>
+  </div>
+
+  <header class="masthead">
+    <p class="eyebrow">The Compute Standard</p>
+    <h1>Money, anchored<br>back to <em>compute</em></h1>
+    <p class="lede">
+      An economy is arriving where AI agents pay each other hundreds of times a second,
+      in amounts smaller than a cent. Today's payment rails cannot settle a single one of
+      those transactions. Axon's answer is not to improve the rails but to
+      <strong>redefine the currency.</strong>
+    </p>
+
+    <div class="plate">
+      <div class="plate-inner">
+        <div class="plate-label">
+          <span class="mono">Standard compute unit &middot; ACU</span>
+          <span class="mono">Whitepaper 4.1</span>
+        </div>
+        <p class="plate-eq"><b>1 ACU</b> = <b>1,000</b> LLM tokens of standard-quality<br>inference output from a reference model</p>
+        <p class="plate-note">
+          And <b>1 AXN</b> is newly issued only when <b>1 ACU of compute supply has been verified.</b>
+          No compute actually supplied, no money created.
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <section class="chap">
+    <div class="chap-mark">
+      <span class="code">&sect; 01</span>
+      <span class="ref">WP 1.1&ndash;1.3</span>
+    </div>
+    <div class="body">
+      <h2>What is actually happening</h2>
+      <p>
+        An AI agent is no longer a tool that runs one human command at a time. Give it a goal
+        and a budget, and it breaks the goal into pieces &mdash; and for the pieces it cannot do itself,
+        <strong>it buys the services of other agents.</strong> A translation agent commissions review;
+        a code-writing agent orders tests.
+      </p>
+      <p>
+        The human decides <em>what is to be achieved</em>; the agent decides
+        <em>what to buy, from whom, at what price</em>. The transactions that result are
+        unlike human commerce in three ways.
+      </p>
+
+      <dl class="rows">
+        <div class="row">
+          <dt>Far more frequent</dt>
+          <dd>Agents run around the clock and need milliseconds to decide on a purchase. While one top-level goal executes, hundreds of purchases cascade.</dd>
+        </div>
+        <div class="row">
+          <dt>Far smaller</dt>
+          <dd>Finer division of labour improves both performance and cost, so summarising one document or verifying one function each becomes an independent paid transaction. Sub-cent amounts are the basic unit.</dd>
+        </div>
+        <div class="row">
+          <dt>No human in the loop</dt>
+          <dd>Quotes, comparison, ordering and delivery confirmation are exchanged as protocol messages machines interpret, not contracts people read. There is nobody in the middle to press approve.</dd>
+        </div>
+      </dl>
+
+      <p>
+        There is one more signal. Software billing has been decomposing for years &mdash;
+        <strong>monthly seat &rarr; usage-based &rarr; per LLM token</strong>. The yardstick for value
+        was already drifting toward compute.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <section class="chap">
+    <div class="chap-mark">
+      <span class="code">&sect; 02</span>
+      <span class="ref">WP 2.1&ndash;2.5</span>
+    </div>
+    <div class="body">
+      <h2>Why today's rails cannot carry it</h2>
+      <p>
+        Card networks and bank transfers were designed around <strong>human</strong> transaction habits:
+        a handful of payments a day, each worth at least a few dollars, between identity-verified people.
+        Agent transactions break all three premises. This is not a gap that performance tuning narrows;
+        it is a mismatch in design premises.
+      </p>
+
+      <dl class="rows">
+        <div class="row">
+          <dt>Fees</dt>
+          <dd>Card fees carry a <strong>fixed per-transaction component</strong>. As the amount shrinks, the fee rate diverges. On a sub-cent transaction the fee is tens to hundreds of times the value &mdash; the transaction simply does not hold up.</dd>
+        </div>
+        <div class="row">
+          <dt>Settlement delay</dt>
+          <dd>A card payment looks instant, but the money actually moves <strong>one to two business days later.</strong> To a counterparty working in milliseconds, "next-business-day settlement" is not infrastructure but an obstacle.</dd>
+        </div>
+        <div class="row">
+          <dt>Account model</dt>
+          <dd>Opening an account presupposes identity verification. An agent has no legal personhood, so it <strong>cannot open an account in its own name.</strong> Share one owner's card among hundreds of agents and per-agent limits, attribution and audit trails all become impossible.</dd>
+        </div>
+      </dl>
+
+      <h3>Public blockchains are not the answer either</h3>
+      <p>
+        They remove the identity barrier, but the rest remains. Fees are charged independently of
+        transaction value and spike under congestion, so <strong>the card network's problem reappears</strong>;
+        finality takes seconds to minutes. Bundling transactions into blocks and having the whole network
+        agree on their order is a choice made for security &mdash; but the delay and fees it costs are a fixed
+        cost micropayments cannot bear.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <section class="chap">
+    <div class="chap-mark">
+      <span class="code">&sect; 03</span>
+      <span class="ref">WP 3.1&ndash;3.4</span>
+    </div>
+    <div class="body">
+      <h2>Why compute, of all things, is money</h2>
+      <p>
+        The marginal cost of everything an agent does is dominated by <strong>inference compute.</strong>
+        Both the party quoting and the party paying converge on the same question: how much compute does
+        this task take. If that is so, it is natural for the currency of that economy to become compute itself.
+      </p>
+      <p>
+        This is a testable proposition, not a slogan. For anything to be money it must perform
+        <strong>three functions.</strong>
+      </p>
+
+      <dl class="rows">
+        <div class="row">
+          <dt>Unit of account</dt>
+          <dd>Compare unlike goods on one scale. Pricing in compute puts price and cost on the same unit; pricing in fiat introduces two layers of noise &mdash; model repricing and exchange rates.</dd>
+        </div>
+        <div class="row">
+          <dt>Medium of exchange</dt>
+          <dd>A translation agent needs review, but the reverse is not guaranteed. <strong>Demand for compute alone is universal</strong> &mdash; every agent runs on it, so a claim on compute is accepted by anyone.</dd>
+        </div>
+        <div class="row">
+          <dt>Store of value</dt>
+          <dd>What you were paid today must hold its purchasing power tomorrow. A claim on compute is anchored to the work compute can perform, and that demand persists as long as the agent economy grows.</dd>
+        </div>
+      </dl>
+
+      <h3>From the gold standard to the compute standard</h3>
+      <p>
+        Under the gold standard, trust in money came from <strong>convertibility</strong>: paper was a claim
+        on a metal whose mining cost was real. Credit money replaced that anchor with an institution &mdash;
+        a central bank manages value, and in exchange for the flexibility, money's value depends on trust
+        in the issuer.
+      </p>
+      <p>
+        The compute standard returns the anchor to a physical good, but makes that good the
+        <strong>factor of production of the economy in question.</strong> Gold's industrial utility was
+        largely decoupled from monetary demand; compute is the raw material of the agent economy itself.
+        <strong>Demand for the anchor is demand for economic activity</strong> &mdash; a more direct connection
+        than the gold standard ever had.
+      </p>
+
+      <div class="objection">
+        <p class="q">"Compute keeps getting cheaper. Can a currency anchored to something whose production cost is falling hold its value?"</p>
+        <p class="a">
+          The strongest objection, and the whitepaper takes it head on. The answer splits in two.
+          <b>First, the layer of the unit.</b> ACU is defined not by compute consumed as input (FLOPs) but by
+          <b>output</b> &mdash; inference that meets a reference benchmark's quality. Progress that produces
+          the same-quality output more cheaply does not dilute the unit; it <b>lowers the cost of supply.</b>
+          <b>Second, the layer of the money supply.</b> New issuance is tied only to verified compute supply,
+          and a portion of transaction fees is <b>burned</b> to offset supply pressure from the other direction.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <section class="chap">
+    <div class="chap-mark">
+      <span class="code">&sect; 04</span>
+      <span class="ref">WP 4.1&ndash;4.4</span>
+    </div>
+    <div class="body">
+      <h2>Build the ruler first &mdash; the ACU</h2>
+      <p class="gloss">
+        <b>ACU</b> (Agentic Compute Unit) is <b>a unit, not a currency</b> &mdash; the same way the metre
+        measures length without being money. The currency is AXN; ACU is the ruler that fixes what
+        that money refers to.
+      </p>
+      <p>
+        Why not measure in FLOPs? Because FLOPs are <strong>input, not output.</strong> The same FLOPs yield
+        different quality depending on model and technique, and progress steadily reduces the FLOPs needed
+        for output of a given quality. Anchor money to that ruler and its value thins out year after year.
+      </p>
+      <p>
+        So the ACU measures <strong>quality-adjusted compute</strong> against output:
+        1,000 tokens of inference output meeting reference benchmark quality. The usefulness of that output
+        survives changes in production technology &mdash; being able to make it more cheaply does not change
+        what 1 ACU means. <strong>The stability of the unit and the efficiency of production are decoupled.</strong>
+        That is the structural answer to falling compute costs.
+      </p>
+      <p class="gloss">
+        Models differ, so the network sets a <b>conversion rate</b> for each &mdash; how many ACU
+        1,000 tokens of a given model's output is worth &mdash; and periodically rebases it. The whitepaper
+        names this rate-setting mechanism as <b>the softest point in the design</b>, and &sect;10 returns to it.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <section class="chap">
+    <div class="chap-mark">
+      <span class="code">&sect; 05</span>
+      <span class="ref">WP 5.1&ndash;5.4</span>
+    </div>
+    <div class="body">
+      <h2>When new money is created</h2>
+      <p>
+        Not by policy at a central bank, and not by winning a mining race. In Axon there is exactly one
+        condition: <strong>compute was actually supplied, and that supply was verified.</strong>
+      </p>
+
+      <div class="flow">
+        <div class="step">
+          <span class="n">01</span>
+          <p class="t">A supply node <b>performs compute</b> and reports it to the network.</p>
+        </div>
+        <div class="step">
+          <span class="n">02</span>
+          <p class="t">Verifiers <b>re-execute a random sample</b> to check the claim is true.</p>
+        </div>
+        <div class="step">
+          <span class="n">03</span>
+          <p class="t"><b>1 AXN is issued per verified 1 ACU.</b></p>
+        </div>
+        <div class="step">
+          <span class="n">04</span>
+          <p class="t"><b>0.97</b> goes to the supplier, <b>0.03</b> pays for verification.</p>
+        </div>
+      </div>
+
+      <p style="margin-top:1.5rem">
+        Issuance is one direction; there is another. Every transaction carries a
+        <strong>protocol fee of 0.1&ndash;0.5% of value</strong>, and part of it is <strong>burned</strong> &mdash;
+        offsetting the supply pressure of a demand-growth phase from the opposite side.
+      </p>
+      <p class="gloss">
+        The <b>3% verification tax</b> is not a levy collected separately; it is a slice of the money being
+        newly issued. <b>The thing being verified pays for its own verification</b>, so the verification
+        layer sustains itself without an external subsidy.
+      </p>
+      <p>
+        <strong>There is no fixed total supply.</strong> Instead, because issuance is bound to compute supply
+        alone, money cannot grow without supply and existing holdings cannot be diluted without issuance.
+        The money supply grows at exactly the rate real compute supply grows.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <section class="chap">
+    <div class="chap-mark">
+      <span class="code">&sect; 06</span>
+      <span class="ref">WP 6.1&ndash;6.5</span>
+    </div>
+    <div class="body">
+      <h2>The ledger splits into three layers</h2>
+      <p>
+        Tens of thousands of transactions a second, each worth less than a cent. No single ledger
+        absorbs that. So the roles divide.
+      </p>
+
+      <div class="stack">
+        <div class="layer">
+          <span class="tag">L1 &mdash; Settlement</span>
+          <p class="what">Finalises balances and handles issuance, burn and disputes. A <b>DAG with no blocks</b> &mdash; instead of queueing transactions into blocks, each transaction directly verifies earlier ones and attaches in parallel. With no block to wait for, it targets <b>sub-second finality.</b></p>
+        </div>
+        <div class="layer l2">
+          <span class="tag">L2 &mdash; Channels</span>
+          <p class="what">Where the great majority of micropayments happen. Individual payments are never written to the ledger &mdash; they <b>complete on the spot through an exchange of both parties' signatures</b> &mdash; and only net amounts periodically settle to L1. No per-transaction recording cost means <b>no fixed fee.</b></p>
+        </div>
+        <div class="layer">
+          <span class="tag">Identity</span>
+          <p class="what">Gives each agent its own <b>identity (DID)</b> and binds that identity to the <b>legal liability of its owner</b> &mdash; a person or a legal entity. Not a human identity on loan: the machine gets its own name, and the owner carries the liability.</p>
+        </div>
+      </div>
+
+      <p class="gloss" style="margin-top:1.5rem">
+        <b>By analogy.</b> L2 is a <b>water meter</b>: you do not call the bank for every drop &mdash; the meter
+        simply turns. L1 is the <b>monthly statement</b>: the accumulated reading is settled once and made
+        final. Millions of transactions leave one line in the ledger.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <section class="chap">
+    <div class="chap-mark">
+      <span class="code">&sect; 07</span>
+      <span class="ref">WP 7.1&ndash;7.5</span>
+    </div>
+    <div class="body">
+      <h2>Make lying cost more than it pays</h2>
+      <p>
+        What if the claim "I supplied compute" is false? That is not ordinary fraud &mdash; it is
+        <strong>counterfeit money.</strong> Getting currency issued for work never performed dilutes the
+        holdings not of one counterparty but of <strong>every AXN holder.</strong>
+      </p>
+      <p>
+        So verification splits in two. <strong>Ordinary transactions, lightly:</strong> the buyer consuming the
+        result is the natural verifier, and a wrong judgement harms only the parties to that payment.
+        <strong>The issuance path, heavily:</strong> objective, adversarial verification that assumes a
+        counterparty who intends to cheat.
+      </p>
+
+      <h3>Don't inspect everything. Just make fraud unprofitable.</h3>
+      <p>
+        Re-running every computation is unaffordable. The goal instead is to
+        <strong>make the expected value of fraud negative</strong> &mdash; if what you lose when caught
+        exceeds what you gain when not, a rational participant does not cheat.
+      </p>
+
+      <div class="tablewrap">
+        <table>
+          <caption class="mono">Draft verification parameters &middot; WP 7.4 / Appendix A</caption>
+          <thead>
+            <tr><th scope="col">Mechanism</th><th scope="col">Value</th><th scope="col">What it does</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Epoch length</td><td class="v">1 hour</td><td>The cycle over which supply claims are committed</td></tr>
+            <tr><td>Sample count k</td><td class="v">30 per node</td><td>Claims drawn at random and re-executed each epoch</td></tr>
+            <tr><td>Challenge window</td><td class="v">24 hours</td><td>The period in which anyone can demand re-verification</td></tr>
+            <tr><td>Minimum bond</td><td class="v">5&ndash;10&times; issuance</td><td>Slashed when a claim proves false &mdash; the core of the negative-expected-value argument</td></tr>
+            <tr><td>Verification tax</td><td class="v">3% of issuance</td><td>Funds verifier rewards. Self-sustaining, no external subsidy</td></tr>
+            <tr><td>Verification overhead</td><td class="v">1&ndash;3% of compute</td><td>The network's total spend on verification (design target)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:1.2rem;font-size:0.88rem;color:var(--ink-2)">
+        These are <strong>draft values.</strong> They are fixed only after re-validation against testnet
+        measurement in Phase 1.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <section class="chap">
+    <div class="chap-mark">
+      <span class="code">&sect; 08</span>
+      <span class="ref">WP 8.1 / 9.1</span>
+    </div>
+    <div class="body">
+      <h2>Who takes part, and what they get</h2>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr><th scope="col">Participant</th><th scope="col">Reason to take part</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Agent</td><td>The ultra-small transactions that did not hold up on existing rails become payable. It divides labour more finely and trades more widely.</td></tr>
+            <tr><td>Compute-supply node</td><td>Receives 0.97 AXN for every 1 ACU supplied &mdash; direct monetisation of idle compute.</td></tr>
+            <tr><td>Verification node</td><td>Rewarded in proportion to contribution from the verification-tax pool (3% of new issuance).</td></tr>
+            <tr><td>Developer</td><td>A revenue path settled <strong>by streaming, in proportion to actual use</strong>, instead of seat subscriptions.</td></tr>
+            <tr><td>Enterprise</td><td>Delegate budgets to agents with spending limits and an audit trail. Liability is unambiguous.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Market</h3>
+      <p>
+        The real good being paid for is <strong>AI inference.</strong> That market is projected to grow from
+        <span class="num">USD&nbsp;106.15&nbsp;billion</span> in 2025 to <span class="num">USD&nbsp;254.98&nbsp;billion</span>
+        in 2030, a <span class="num">19.2%</span> CAGR &mdash; and inference spending is, by its nature,
+        <strong>entirely recurring.</strong> Whatever share of it shifts into the ultra-small, high-frequency
+        segment existing rails cannot handle becomes Axon's potential payment volume.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <section class="chap">
+    <div class="chap-mark">
+      <span class="code">&sect; 09</span>
+      <span class="ref">Validation summary</span>
+    </div>
+    <div class="body">
+      <h2>We did not leave it as assertion</h2>
+      <p>
+        The whitepaper's claims were not left as sentences. <strong>Ten independent prototypes</strong>
+        put them into code and stress-tested them under adversarial conditions. All three axes &mdash;
+        issuance economics, verification feasibility, payment and verification plumbing &mdash;
+        passed a first-pass validation.
+      </p>
+
+      <div class="figures">
+        <div class="fig"><span class="v">1,144</span><p class="k">prototype tests</p></div>
+        <div class="fig"><span class="v">62</span><p class="k">named adversarial scenarios</p></div>
+        <div class="fig"><span class="v">15 / 60</span><p class="k">scenarios whose verdict <b>depends on the arrangement</b></p></div>
+      </div>
+
+      <p style="margin-top:1.6rem">
+        The last figure is the one that matters. We shook the arrangement of transactions
+        (actor identity, transaction nonce) across twenty arrangements on each axis, and found
+        <strong>fifteen scenarios whose verdict rested on the arrangement rather than the rules.</strong>
+        We did not fix them. <strong>We published the number.</strong>
+      </p>
+      <p class="gloss">
+        This repository runs on one rule: <b>publish only what was measured; write nothing that was not.</b>
+        Corrections are appended as history rather than erased. The validation summary records what broke
+        with the same weight as what held.
+      </p>
+      <p>
+        What the prototype does <strong>not</strong> establish is equally clear: whether "compute is money"
+        is a sound thesis, whether any economic parameter is right, and how a real network behaves under
+        latency, partitions and rational adversaries.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <section class="chap">
+    <div class="chap-mark">
+      <span class="code">&sect; 10</span>
+      <span class="ref">WP 11.1&ndash;11.3</span>
+    </div>
+    <div class="body">
+      <h2>What we have not answered</h2>
+      <p>
+        The whitepaper's rule is this: <strong>what has a mitigation is set down with its mitigation;
+        what lacks a sufficient one is set down as insufficient.</strong> Below is the latter.
+      </p>
+
+      <div class="limits">
+        <div class="limit">
+          <span class="k">!</span>
+          <p class="d"><b>Consensus bootstrap.</b> A purpose-built ledger does not inherit the accumulated security of an existing chain. How it withstands attack while the network is small is <b>the single largest unanswered question in the paper.</b></p>
+        </div>
+        <div class="limit">
+          <span class="k">!</span>
+          <p class="d"><b>The conversion-rate oracle.</b> If a model's rate is inflated, its suppliers gain real value without committing fraud in the sampling sense. The economic countermeasure is unsettled.</p>
+        </div>
+        <div class="limit">
+          <span class="k">!</span>
+          <p class="d"><b>Misjudgement is confiscation.</b> Inference is non-deterministic, so an honest supplier slashed in error has property destroyed. This is recorded as a risk in its own right.</p>
+        </div>
+        <div class="limit">
+          <span class="k">!</span>
+          <p class="d"><b>Securities characterisation.</b> The criteria vary by jurisdiction, and a token designed for utility can still be characterised otherwise. It is <b>the only item on this list that cannot be corrected after the fact.</b></p>
+        </div>
+        <div class="limit">
+          <span class="k">!</span>
+          <p class="d"><b>Early liquidity and volatility.</b> The argument that arbitrage between issuance and burn converges the price holds only when both directions are open and liquid. Before the flywheel turns, neither is.</p>
+        </div>
+      </div>
+
+      <h3>What is deliberately left open</h3>
+      <p>
+        Unsettled and unsettleable are not the same thing. The following are open
+        <strong>by intent</strong> at Phase 0.
+      </p>
+      <dl class="rows">
+        <div class="row">
+          <dt>Genesis quantity</dt>
+          <dd>Announced by governance before mainnet. The <strong>ratios</strong> are already public &mdash; ecosystem reward pool 55% / operator and team 17.5% / investors 17.5% / foundation reserve 10%.</dd>
+        </div>
+        <div class="row">
+          <dt>Fee allocation</dt>
+          <dd>How the fee splits between burn and treasury is a governance parameter.</dd>
+        </div>
+        <div class="row">
+          <dt>Phase thresholds</dt>
+          <dd>Each phase's numeric thresholds are published <strong>at the close of the preceding phase.</strong></dd>
+        </div>
+        <div class="row">
+          <dt>Team composition</dt>
+          <dd>Not carried in this edition. The ask at Phase 0 is design review, and the party receiving the operator and team allocation is disclosed when that allocation is actually fixed.</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <section class="chap">
+    <div class="chap-mark">
+      <span class="code">&sect; 11</span>
+      <span class="ref">WP 10.3</span>
+    </div>
+    <div class="body">
+      <h2>Advanced by criteria, not by dates</h2>
+      <p>
+        The roadmap carries no calendar dates. A date, if missed, becomes a cost in trust; if conditions
+        are sacrificed to keep it, a larger cost. Each phase advances only when it has met
+        <strong>its stated exit criteria.</strong>
+      </p>
+
+      <div class="phases">
+        <div class="ph now">
+          <span class="p">PHASE 0</span>
+          <p class="d"><b>Whitepaper and community</b> &mdash; current. Publication, design review, early partners.
+            <span class="exit">Exit: design-review feedback incorporated; testnet scope and verification plan fixed</span></p>
+        </div>
+        <div class="ph">
+          <span class="p">PHASE 1</span>
+          <p class="d"><b>Testnet</b> &mdash; running sampling verification and the L2 channel for real, re-validating the draft parameters against measurement.
+            <span class="exit">Exit: parameters fixed; target detection rate and finalisation time reproduced; external node participation held above a pre-announced threshold</span></p>
+        </div>
+        <div class="ph">
+          <span class="p">PHASE 2</span>
+          <p class="d"><b>Mainnet</b> &mdash; genesis allocation, compute-standard issuance begins, initial demand ignited.
+            <span class="exit">Exit: the ignition workloads' share of total payment volume falls below the announced threshold and stays there &mdash; <b>the flywheel turns on its own</b></span></p>
+        </div>
+        <div class="ph">
+          <span class="p">PHASE 3</span>
+          <p class="d"><b>Expansion</b> &mdash; TEE preference path, zkML research, jurisdiction-by-jurisdiction regulatory work.
+            <span class="exit">An ongoing phase, managed by item-specific criteria</span></p>
+        </div>
+      </div>
+
+      <p style="margin-top:1.5rem">
+        Phase 2's exit criterion is worth a second look. The workloads the operator and its partners
+        inject at mainnet launch are <strong>an ignition device, not a permanent one.</strong> The phase
+        graduates only when their share has fallen far enough and stayed there. Which is to say:
+        <strong>a network whose ignition never switches off has no right to speak of expansion.</strong>
+      </p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <section class="closing">
+    <p class="eyebrow">What we are asking for</p>
+    <p class="big" style="margin-top:1rem">Not endorsement. The strongest objection you can make.</p>
+    <p style="margin-top:1.5rem;color:var(--ink-2)">
+      Axon is at Phase 0 &mdash; whitepaper publication and design review. Nothing is deployed and the
+      economic parameters are draft values. At this stage we invite participation in three ways:
+      <strong>feedback on the design review</strong>, <strong>participation as supply and verification
+      nodes on the Phase 1 testnet</strong>, and <strong>early workload partnerships</strong>.
+    </p>
+
+    <div class="docs">
+      <div class="doc">
+        <p class="n">Axon Whitepaper <span>All twelve chapters. Thesis, unit definition, monetary design, ledger architecture, Proof of Inference, risks and regulation.</span></p>
+        <span class="mono">whitepaper.en.md</span>
+      </div>
+      <div class="doc">
+        <p class="n">Design Validation Summary <span>What ten prototypes confirmed and what broke. Start here if you want to know how much of this is real.</span></p>
+        <span class="mono">verification-summary.en.md</span>
+      </div>
+    </div>
+
+    <p class="colophon">
+      AXON (AXN) &middot; PLAIN-LANGUAGE SUMMARY &middot; PHASE 0<br>
+      This page summarises the whitepaper and the validation summary; those two documents govern every figure here. Draft values are fixed by testnet measurement.<br>
+      Not an offer or solicitation to invest. No network is deployed.
+    </p>
+  </section>
+
+</div>
