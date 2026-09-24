@@ -8,7 +8,7 @@ Axon is built on a single thesis: in an economy where most transactions run agen
 
 | | |
 |---|---|
-| [**Start here**](https://bob-kkn.github.io/axon-whitepaper/) | A plain-language summary of the whole design, in one page |
+| [Start here](docs/intro/axon-intro.en.html) | A plain-language summary of the whole design, in one page. Download and open it in a browser — GitHub shows HTML as source |
 | [Whitepaper](docs/whitepaper/whitepaper.en.md) | The design in full |
 | ✅ [Validation summary](docs/verification-summary.en.md) | Ten prototype slices stress-testing the core claims, 1,144 tests (pre-testnet) |
 
